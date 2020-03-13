@@ -1,0 +1,32 @@
+- name: Install the latest version of Apache
+  yum:
+    name: httpd
+    state: latest
+
+- name: copy index.html to /var/www/html
+  copy:
+    src: "{{ role_path }}/files/index.html"
+    dest: /var/www/html/index.html
+
+- name: copy openssl certificate to the home-dir
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: "/home/ec2-user/{{ item }}"
+  with_items:
+    - turnberrypoc.crt
+    - turnberrypoc.key
+
+- name: Install mod_ssl package
+  yum:
+    name: mod_ssl
+    state: latest
+
+- name: Copy modfied httpd.conf file to the apache default conf folder
+  template:
+    src: "{{ role_path }}/templates/httpd.conf"
+    dest: /etc/httpd/conf/httpd.conf
+
+- name: Start service httpd, if not started
+  service:
+    name: httpd
+    state: restarted
